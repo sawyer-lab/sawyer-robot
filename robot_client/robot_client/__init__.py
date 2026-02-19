@@ -13,10 +13,19 @@ Each subsystem has its own client class:
 - LightsClient: Robot lights control
 - ContactSensorClient: Landing detection
 - RGBDCameraClient: Point cloud capture
+
+Geometry primitives:
+- Position, Quaternion, Euler, Pose, JointAngles
+
+Sawyer enums:
+- Joint, Camera, Limb, GripperState
+
+Typed status dataclass:
+- GripperStatus
 """
 
 from .robot import RobotClient
-from .gripper import GripperClient
+from .gripper import GripperClient, GripperStatus
 from .camera import CameraClient
 from .gazebo import GazeboClient
 from .head import HeadClient
@@ -24,9 +33,11 @@ from .lights import LightsClient
 from .contact_sensor import ContactSensorClient
 from .rgbd_camera import RGBDCameraClient
 from .geometry import Position, Quaternion, Euler, Pose, JointAngles
+from .sawyer import Joint, Camera, Limb, GripperState
 
 __version__ = "1.0.0"
 __all__ = [
+    # clients
     "RobotClient",
     "GripperClient",
     "CameraClient",
@@ -35,9 +46,17 @@ __all__ = [
     "LightsClient",
     "ContactSensorClient",
     "RGBDCameraClient",
+    # geometry
     "Position",
     "Quaternion",
     "Euler",
     "Pose",
     "JointAngles",
+    # enums
+    "Joint",
+    "Camera",
+    "Limb",
+    "GripperState",
+    # typed status
+    "GripperStatus",
 ]

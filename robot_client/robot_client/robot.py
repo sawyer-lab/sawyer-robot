@@ -1,99 +1,93 @@
 """
-RobotClient - Robot arm control
+RobotClient — Sawyer arm control, strongly typed.
 """
 
-from typing import List, Dict, Optional
+from typing import Optional
+import numpy as np
+
 from .base_client import BaseClient
+from .geometry import JointAngles, Pose, Position, Quaternion
+from .sawyer import Limb
 
 
 class RobotClient(BaseClient):
-    """
-    Robot arm control client.
+    """Controls the Sawyer right arm (joint positions, Cartesian pose, trajectories)."""
 
-    Controls the robot arm (joint positions, endpoint pose, etc.)
-    """
+    # ── joint control ─────────────────────────────────────────────────────────
 
-    def move_to_joints(self, angles: List[float], timeout: float = 30.0) -> bool:
-        """Move robot to target joint positions."""
-        return self._client.move_to_joints(angles, timeout)
+    def move_to_joints(self, angles: JointAngles, timeout: float = 30.0) -> bool:
+        """Move the arm to the given joint configuration."""
+        return self._client.move_to_joints(angles.to_list(), timeout)
 
-    def get_joint_angles(self) -> List[float]:
-        """Get current joint angles."""
-        return self._client.get_joint_angles()
+    def get_joint_angles(self) -> JointAngles:
+        """Return current joint angles."""
+        return JointAngles.from_list(self._client.get_joint_angles())
 
-    def get_endpoint_pose(self) -> Optional[Dict]:
-        """Get end-effector pose."""
-        return self._client.get_endpoint_pose()
+    def get_joint_velocities(self) -> JointAngles:
+        """Return current joint velocities (rad/s)."""
+        return JointAngles.from_list(self._client.get_joint_velocities())
 
-    def get_state(self) -> Dict:
-        """Get complete robot state."""
-        return self._client.get_robot_state()
+    # ── Cartesian control ─────────────────────────────────────────────────────
 
-    def get_robot_name(self) -> str:
-        """Get robot name (e.g., 'sawyer')."""
-        return self._client.params_robot_name()
+    def get_endpoint_pose(self) -> Optional[Pose]:
+        """Return current end-effector pose, or None if unavailable."""
+        raw = self._client.get_endpoint_pose()
+        return Pose.from_dict(raw) if raw else None
 
-    def get_limb_names(self) -> List[str]:
-        """Get limb names."""
-        return self._client.params_limb_names()
-
-    def get_joint_names(self, limb='right') -> List[str]:
-        """Get joint names for limb."""
-        return self._client.params_joint_names(limb)
-
-    def get_joint_velocities(self) -> List[float]:
-        """Get current joint velocities."""
-        return self._client.get_joint_velocities()
-
-    def get_endpoint_velocity(self) -> Optional[Dict]:
-        """Get end-effector velocity (linear and angular)."""
+    def get_endpoint_velocity(self) -> Optional[dict]:
+        """Return current end-effector linear and angular velocity."""
         return self._client.get_endpoint_velocity()
 
-    def execute_trajectory(self, waypoints: List[Dict], rate_hz: float = 100.0) -> bool:
+    # ── trajectories ──────────────────────────────────────────────────────────
+
+    def execute_trajectory(self, waypoints: list[dict], rate_hz: float = 100.0) -> bool:
         """
-        Send a full trajectory for the container to execute at the given rate.
+        Execute a pre-computed trajectory at the given rate.
 
-        Args:
-            waypoints: List of dicts with 'position', 'velocity', 'acceleration' keys.
-                       Each value is a list of 7 floats.
-            rate_hz: Execution rate in Hz (default: 100).
-
-        Returns:
-            bool: Success
+        Each waypoint is a dict with keys 'position', 'velocity', 'acceleration',
+        each mapping to a list of 7 floats.
         """
         return self._client.execute_trajectory(waypoints, rate_hz)
 
-    def execute_toss_trajectory(self, Q, Qd, Qdd, release_index=None) -> bool:
+    def execute_toss_trajectory(
+        self,
+        Q:   np.ndarray,
+        Qd:  np.ndarray,
+        Qdd: np.ndarray,
+        release_index: Optional[int] = None,
+    ) -> bool:
         """
-        Execute toss trajectory at 100Hz with async gripper release.
-
-        Runs the 100Hz command loop inside the container and opens the gripper
-        at the specified step without interrupting the trajectory.
+        Execute a toss trajectory at 100 Hz with async gripper release.
 
         Args:
-            Q:   (N, 7) joint positions (list or numpy array).
-            Qd:  (N, 7) joint velocities.
-            Qdd: (N, 7) joint accelerations.
-            release_index: Step at which to open the gripper asynchronously.
+            Q:             (N, 7) joint positions in radians.
+            Qd:            (N, 7) joint velocities in rad/s.
+            Qdd:           (N, 7) joint accelerations in rad/s².
+            release_index: Trajectory step at which to open the gripper.
                            Pass None to skip gripper release.
-
-        Returns:
-            bool: Success
         """
         return self._client.execute_toss_trajectory(Q, Qd, Qdd, release_index)
 
+    # ── robot info ────────────────────────────────────────────────────────────
+
+    def get_state(self) -> dict:
+        """Return complete robot state dict."""
+        return self._client.get_robot_state()
+
+    def get_joint_names(self, limb: Limb = Limb.RIGHT) -> list[str]:
+        """Return the ROS joint names for the given limb."""
+        return self._client.params_joint_names(limb.value)
+
+    # ── gripper convenience ───────────────────────────────────────────────────
+
     def gripper_open(self) -> bool:
-        """Open the gripper fully."""
+        """Open the gripper."""
         return self._client.gripper_open()
 
     def gripper_close(self) -> bool:
         """Close the gripper."""
         return self._client.gripper_close()
 
-    def gripper_set_position(self, position: float) -> bool:
-        """Set gripper position (0.0=closed, 0.041667=open)."""
-        return self._client.gripper_set_position(position)
-
-    def gripper_get_state(self) -> Dict:
-        """Get gripper state dict."""
+    def gripper_get_state(self) -> dict:
+        """Return current gripper state."""
         return self._client.gripper_get_state()

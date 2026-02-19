@@ -17,7 +17,7 @@ import cv2
 import numpy as np
 
 
-from robot_client import CameraClient, HeadClient
+from robot_client import Camera, CameraClient, HeadClient
 
 CONTAINER_HOST = os.environ.get('ROBOT_HOST', 'localhost')
 HEAD_DISPLAY_SIZE = (1024, 600)   # Sawyer head screen resolution (w, h)
@@ -46,7 +46,7 @@ def main():
     head = HeadClient(protocol='zmq', host=CONTAINER_HOST)
 
     # Check hand camera is reachable
-    state = cam.get_state(camera=CameraClient.HAND)
+    state = cam.get_state(camera=Camera.HAND)
     if state is None:
         print("ERROR: could not reach ZMQ server. Is the container running?")
         sys.exit(1)
@@ -54,13 +54,13 @@ def main():
     print(f"Image available   : {state.get('has_image')}")
 
     print("Starting hand camera stream...")
-    cam.start(camera=CameraClient.HAND)
+    cam.start(camera=Camera.HAND)
 
     # Wait for first frame
     print("Waiting for first frame ", end='', flush=True)
     for _ in range(30):
         time.sleep(0.2)
-        s = cam.get_state(camera=CameraClient.HAND)
+        s = cam.get_state(camera=Camera.HAND)
         if s and s.get('has_image'):
             print(" ready.")
             break
@@ -74,7 +74,7 @@ def main():
     save_count  = 0
 
     while True:
-        img = cam.get_image(camera=CameraClient.HAND)
+        img = cam.get_image(camera=Camera.HAND)
 
         if img is not None:
             display = fit_to_display(img)
@@ -100,7 +100,7 @@ def main():
             save_count += 1
 
     cv2.destroyAllWindows()
-    cam.stop(camera=CameraClient.HAND)
+    cam.stop(camera=Camera.HAND)
     cam.close()
     head.close()
     print("Done.")

@@ -1,49 +1,38 @@
 """
-CameraClient - Camera control
+CameraClient — Sawyer camera control, strongly typed.
 """
 
+from typing import Optional
+import numpy as np
+
 from .base_client import BaseClient
+from .sawyer import Camera
 
 
 class CameraClient(BaseClient):
-    """
-    Camera control client.
+    """Controls Sawyer camera streaming and image capture."""
 
-    Controls camera streaming and image capture.
-    Camera names:
-        CameraClient.HEAD  — head-mounted camera
-        CameraClient.HAND  — wrist / end-effector camera
-    """
+    def start(self, camera: Camera) -> bool:
+        """Start streaming the given camera."""
+        return self._client.camera_start(camera=camera.value)
 
-    HEAD = 'head'
-    HAND = 'hand'
+    def stop(self, camera: Camera) -> bool:
+        """Stop streaming the given camera."""
+        return self._client.camera_stop(camera=camera.value)
 
-    def start(self, camera=None) -> bool:
-        """Start camera streaming."""
-        return self._client.camera_start(camera=camera)
-
-    def stop(self, camera=None) -> bool:
-        """Stop camera streaming."""
-        return self._client.camera_stop(camera=camera)
-
-    def get_image(self, camera=None):
+    def get_image(self, camera: Camera) -> Optional[np.ndarray]:
         """
-        Get current camera image.
+        Return the latest frame from the given camera.
 
         Returns:
-            numpy array (H, W, 3) BGR format, or None if unavailable
+            numpy array (H, W, 3) in BGR format, or None if unavailable.
         """
-        return self._client.camera_get_image(camera=camera)
+        return self._client.camera_get_image(camera=camera.value)
 
-    def get_state(self, camera=None):
+    def get_state(self, camera: Camera) -> Optional[dict]:
         """
-        Get camera state (streaming flag, has_image, topic).
+        Return camera state dict with keys 'streaming', 'has_image', 'topic'.
 
-        Returns:
-            dict with 'streaming', 'has_image', 'topic', or None on error
+        Returns None on error.
         """
-        return self._client.camera_get_state(camera=camera)
-
-    def get_camera_names(self):
-        """Get available camera names."""
-        return self._client.params_camera_names()
+        return self._client.camera_get_state(camera=camera.value)

@@ -15,11 +15,11 @@ Controls:
 import sys
 import time
 
-from robot_client import CameraClient
+from robot_client import Camera, CameraClient
 import cv2
 
 
-def choose_camera():
+def choose_camera() -> Camera:
     print("\nSawyer Camera Capture")
     print("=" * 40)
     print("  [1] head  — head-mounted camera")
@@ -29,9 +29,9 @@ def choose_camera():
     while True:
         choice = input("Choose camera (1/2) or type 'head'/'hand': ").strip().lower()
         if choice in ('1', 'head'):
-            return CameraClient.HEAD
+            return Camera.HEAD
         if choice in ('2', 'hand'):
-            return CameraClient.HAND
+            return Camera.HAND
         print("  Enter 1, 2, 'head', or 'hand'")
 
 

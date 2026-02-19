@@ -6,13 +6,11 @@ Types:
     Quaternion  — unit quaternion orientation (x, y, z, w)
     Euler       — roll/pitch/yaw in radians (XYZ convention)
     Pose        — position + orientation
-    JointAngles — ordered joint angles for a 7-DOF arm
+    JointAngles — ordered joint angles for the Sawyer 7-DOF arm
 
 All types are dataclasses, JSON-serialisable (via to_dict/from_dict),
 and use scipy.spatial.transform.Rotation for angle conversions.
 """
-
-from __future__ import annotations
 
 from dataclasses import dataclass, asdict, field
 from typing import List, Sequence
@@ -31,11 +29,11 @@ class Position:
     z: float = 0.0
 
     @classmethod
-    def from_list(cls, v: Sequence[float]) -> Position:
+    def from_list(cls, v: Sequence[float]) -> "Position":
         return cls(float(v[0]), float(v[1]), float(v[2]))
 
     @classmethod
-    def from_dict(cls, d: dict) -> Position:
+    def from_dict(cls, d: dict) -> "Position":
         return cls(float(d['x']), float(d['y']), float(d['z']))
 
     def to_dict(self) -> dict:
@@ -44,13 +42,13 @@ class Position:
     def to_array(self) -> np.ndarray:
         return np.array([self.x, self.y, self.z])
 
-    def __add__(self, other: Position) -> Position:
+    def __add__(self, other: "Position") -> "Position":
         return Position(self.x + other.x, self.y + other.y, self.z + other.z)
 
-    def __sub__(self, other: Position) -> Position:
+    def __sub__(self, other: "Position") -> "Position":
         return Position(self.x - other.x, self.y - other.y, self.z - other.z)
 
-    def distance_to(self, other: Position) -> float:
+    def distance_to(self, other: "Position") -> float:
         return float(np.linalg.norm(self.to_array() - other.to_array()))
 
     def __repr__(self) -> str:
@@ -75,30 +73,30 @@ class Quaternion:
     # ── constructors ─────────────────────────────────────────────────────────
 
     @classmethod
-    def identity(cls) -> Quaternion:
+    def identity(cls) -> "Quaternion":
         return cls(0.0, 0.0, 0.0, 1.0)
 
     @classmethod
-    def from_euler(cls, roll: float, pitch: float, yaw: float) -> Quaternion:
+    def from_euler(cls, roll: float, pitch: float, yaw: float) -> "Quaternion":
         """Create from roll/pitch/yaw in radians (XYZ extrinsic convention)."""
         r = Rotation.from_euler('xyz', [roll, pitch, yaw])
         x, y, z, w = r.as_quat()   # scipy uses (x, y, z, w)
         return cls(float(x), float(y), float(z), float(w))
 
     @classmethod
-    def from_matrix(cls, matrix: np.ndarray) -> Quaternion:
+    def from_matrix(cls, matrix: np.ndarray) -> "Quaternion":
         """Create from a 3×3 rotation matrix."""
         r = Rotation.from_matrix(matrix)
         x, y, z, w = r.as_quat()
         return cls(float(x), float(y), float(z), float(w))
 
     @classmethod
-    def from_list(cls, v: Sequence[float]) -> Quaternion:
+    def from_list(cls, v: Sequence[float]) -> "Quaternion":
         """From [x, y, z, w] list."""
         return cls(float(v[0]), float(v[1]), float(v[2]), float(v[3]))
 
     @classmethod
-    def from_dict(cls, d: dict) -> Quaternion:
+    def from_dict(cls, d: dict) -> "Quaternion":
         return cls(float(d['x']), float(d['y']), float(d['z']), float(d['w']))
 
     # ── conversions ───────────────────────────────────────────────────────────
@@ -106,7 +104,7 @@ class Quaternion:
     def _rot(self) -> Rotation:
         return Rotation.from_quat([self.x, self.y, self.z, self.w])
 
-    def to_euler(self) -> Euler:
+    def to_euler(self) -> "Euler":
         """Return roll/pitch/yaw in radians (XYZ extrinsic)."""
         roll, pitch, yaw = self._rot().as_euler('xyz')
         return Euler(float(roll), float(pitch), float(yaw))
@@ -121,12 +119,12 @@ class Quaternion:
     def to_dict(self) -> dict:
         return {'x': self.x, 'y': self.y, 'z': self.z, 'w': self.w}
 
-    def normalized(self) -> Quaternion:
+    def normalized(self) -> "Quaternion":
         arr = np.array([self.x, self.y, self.z, self.w])
         arr /= np.linalg.norm(arr)
         return Quaternion(float(arr[0]), float(arr[1]), float(arr[2]), float(arr[3]))
 
-    def __mul__(self, other: Quaternion) -> Quaternion:
+    def __mul__(self, other: "Quaternion") -> "Quaternion":
         """Quaternion composition (self * other)."""
         r = self._rot() * other._rot()
         x, y, z, w = r.as_quat()
@@ -149,17 +147,17 @@ class Euler:
     yaw:   float = 0.0
 
     @classmethod
-    def from_degrees(cls, roll: float, pitch: float, yaw: float) -> Euler:
+    def from_degrees(cls, roll: float, pitch: float, yaw: float) -> "Euler":
         return cls(np.radians(roll), np.radians(pitch), np.radians(yaw))
 
     @classmethod
-    def from_dict(cls, d: dict) -> Euler:
+    def from_dict(cls, d: dict) -> "Euler":
         return cls(float(d['roll']), float(d['pitch']), float(d['yaw']))
 
     def to_quaternion(self) -> Quaternion:
         return Quaternion.from_euler(self.roll, self.pitch, self.yaw)
 
-    def to_degrees(self) -> Euler:
+    def to_degrees(self) -> "Euler":
         return Euler(np.degrees(self.roll), np.degrees(self.pitch), np.degrees(self.yaw))
 
     def to_dict(self) -> dict:
@@ -180,7 +178,7 @@ class Pose:
     orientation: Quaternion = field(default_factory=Quaternion.identity)
 
     @classmethod
-    def from_dict(cls, d: dict) -> Pose:
+    def from_dict(cls, d: dict) -> "Pose":
         return cls(
             position=Position.from_dict(d['position']),
             orientation=Quaternion.from_dict(d['orientation']),
@@ -195,7 +193,7 @@ class Pose:
     @classmethod
     def from_position_euler(cls, x: float, y: float, z: float,
                             roll: float = 0.0, pitch: float = 0.0,
-                            yaw: float = 0.0) -> Pose:
+                            yaw: float = 0.0) -> "Pose":
         """Convenience constructor from xyz + rpy (radians)."""
         return cls(
             position=Position(x, y, z),
@@ -210,7 +208,7 @@ class Pose:
         return T
 
     @classmethod
-    def from_matrix(cls, T: np.ndarray) -> Pose:
+    def from_matrix(cls, T: np.ndarray) -> "Pose":
         return cls(
             position=Position.from_list(T[:3, 3]),
             orientation=Quaternion.from_matrix(T[:3, :3]),
@@ -240,13 +238,13 @@ class JointAngles:
     j6: float = 0.0
 
     @classmethod
-    def from_list(cls, angles: Sequence[float]) -> JointAngles:
+    def from_list(cls, angles: Sequence[float]) -> "JointAngles":
         if len(angles) != 7:
             raise ValueError(f"Expected 7 joint angles, got {len(angles)}")
         return cls(*[float(a) for a in angles])
 
     @classmethod
-    def from_dict(cls, d: dict) -> JointAngles:
+    def from_dict(cls, d: dict) -> "JointAngles":
         return cls(
             float(d.get('j0', 0)), float(d.get('j1', 0)),
             float(d.get('j2', 0)), float(d.get('j3', 0)),
