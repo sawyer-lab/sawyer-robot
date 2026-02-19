@@ -23,6 +23,7 @@ from .head import HeadClient
 from .lights import LightsClient
 from .contact_sensor import ContactSensorClient
 from .rgbd_camera import RGBDCameraClient
+from .geometry import Position, Quaternion, Euler, Pose, JointAngles
 
 __version__ = "1.0.0"
 __all__ = [
@@ -34,4 +35,9 @@ __all__ = [
     "LightsClient",
     "ContactSensorClient",
     "RGBDCameraClient",
+    "Position",
+    "Quaternion",
+    "Euler",
+    "Pose",
+    "JointAngles",
 ]
