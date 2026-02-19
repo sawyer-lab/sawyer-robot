@@ -1,0 +1,8 @@
+Metadata-Version: 2.4
+Name: robot-client
+Version: 1.0.0
+Summary: Host-side Python client for Sawyer robot control
+Requires-Python: >=3.8
+Requires-Dist: pyzmq>=25.0.0
+Requires-Dist: requests>=2.25.0
+Requires-Dist: python-socketio>=5.0.0
