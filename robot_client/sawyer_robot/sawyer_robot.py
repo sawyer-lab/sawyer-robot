@@ -3,7 +3,7 @@ SawyerRobot — single entry point for all Sawyer robot control.
 
 Usage::
 
-    from robot_client import SawyerRobot
+    from sawyer_robot import SawyerRobot
 
     robot = SawyerRobot(host='localhost')
 
@@ -84,6 +84,32 @@ class SawyerRobot:
         if self._lights is None:
             self._lights = Lights(self._client)
         return self._lights
+
+    # ── robot state ───────────────────────────────────────────────────────────
+
+    def enable(self) -> bool:
+        """Enable all joints."""
+        return self._client.robot_enable()
+
+    def disable(self) -> bool:
+        """Disable all joints."""
+        return self._client.robot_disable()
+
+    def reset(self) -> bool:
+        """Reset faults and disable."""
+        return self._client.robot_reset()
+
+    def stop(self) -> bool:
+        """Stop the robot (trigger e-stop)."""
+        return self._client.robot_stop()
+
+    def get_robot_status(self) -> dict:
+        """
+        Get high-level robot status (enabled, stopped, error, estop).
+        Return empty dict if unavailable.
+        """
+        response = self._client.robot_state()
+        return response if isinstance(response, dict) else {}
 
     # ── connection ────────────────────────────────────────────────────────────
 

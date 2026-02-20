@@ -12,7 +12,7 @@ sawyer-robot/
 │       ├── hardware/   # Camera, Gripper (ClickSmart), Head, Lights, Robot
 │       └── servers/    # ZMQ server
 └── robot_client/    # Host-side Python package (pip installable)
-    └── robot_client/
+    └── sawyer_robot/
         ├── sawyer_robot.py   # SawyerRobot — single entry point
         ├── components/       # arm, gripper, camera, head, lights
         ├── protocols/        # ZMQ transport
@@ -102,7 +102,7 @@ python src/custom/robot_api/servers/zmq_server.py
 ### 5. Use it in your project
 
 ```python
-from robot_client import SawyerRobot
+from sawyer_robot import SawyerRobot
 
 with SawyerRobot() as robot:
     joints = robot.arm.get_joints()

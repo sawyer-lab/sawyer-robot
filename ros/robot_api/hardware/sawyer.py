@@ -1,7 +1,7 @@
 #!/usr/bin/env python3.8
 import rospy
 import numpy as np
-from intera_core_msgs.msg import JointCommand, EndpointState
+from intera_core_msgs.msg import JointCommand, EndpointState, InteractionControlCommand
 from sensor_msgs.msg import JointState
 from typing import List, Dict, Optional
 from dataclasses import dataclass, field
@@ -47,6 +47,12 @@ class SawyerInterface:
             self._ns + 'joint_command',
             JointCommand,
             tcp_nodelay=True,
+            queue_size=1
+        )
+
+        self._pub_interaction_cmd = rospy.Publisher(
+            self._ns + 'interaction_control_command',
+            InteractionControlCommand,
             queue_size=1
         )
         
@@ -211,6 +217,40 @@ class SawyerInterface:
             self._rate.sleep()
 
         return True
+
+    def set_interaction_control(self, options: Dict) -> None:
+        """
+        Publish interaction control command.
+        
+        Args:
+            options: Dict containing InteractionControlCommand fields.
+        """
+        msg = InteractionControlCommand()
+        msg.header.stamp = rospy.Time.now()
+        msg.interaction_control_active = options.get('active', True)
+        
+        if 'K_impedance' in options: msg.K_impedance = options['K_impedance']
+        if 'max_impedance' in options: msg.max_impedance = options['max_impedance']
+        if 'D_impedance' in options: msg.D_impedance = options['D_impedance']
+        if 'K_nullspace' in options: msg.K_nullspace = options['K_nullspace']
+        if 'force_command' in options: msg.force_command = options['force_command']
+        if 'interaction_control_mode' in options: msg.interaction_control_mode = options['interaction_control_mode']
+        if 'in_endpoint_frame' in options: msg.in_endpoint_frame = options['in_endpoint_frame']
+        if 'disable_damping_in_force_control' in options: msg.disable_damping_in_force_control = options['disable_damping_in_force_control']
+        if 'disable_reference_resetting' in options: msg.disable_reference_resetting = options['disable_reference_resetting']
+        if 'rotations_for_constrained_zeroG' in options: msg.rotations_for_constrained_zeroG = options['rotations_for_constrained_zeroG']
+        
+        if 'interaction_frame' in options:
+            f = options['interaction_frame']
+            msg.interaction_frame.position.x = f['position'][0]
+            msg.interaction_frame.position.y = f['position'][1]
+            msg.interaction_frame.position.z = f['position'][2]
+            msg.interaction_frame.orientation.x = f['orientation'][0]
+            msg.interaction_frame.orientation.y = f['orientation'][1]
+            msg.interaction_frame.orientation.z = f['orientation'][2]
+            msg.interaction_frame.orientation.w = f['orientation'][3]
+
+        self._pub_interaction_cmd.publish(msg)
     
 
 

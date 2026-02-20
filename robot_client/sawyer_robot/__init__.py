@@ -1,9 +1,9 @@
 """
-robot_client — Sawyer robot control library.
+sawyer_robot — Sawyer robot control library.
 
 Entry point::
 
-    from robot_client import SawyerRobot
+    from sawyer_robot import SawyerRobot
 
     with SawyerRobot(host='localhost') as robot:
         joints = robot.arm.get_joints()

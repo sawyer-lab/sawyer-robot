@@ -98,6 +98,33 @@ class ZMQClient:
             return response.get('velocities', [])
         return []
 
+    def get_joint_efforts(self) -> List[float]:
+        """Get current joint efforts (torques)."""
+        response = self._send_command('get_joint_efforts')
+        if response.get('status') == 'ok':
+            return response.get('efforts', [])
+        return []
+
+    def set_joint_positions(self, angles: List[float]) -> bool:
+        """Set target joint positions (raw mode)."""
+        response = self._send_command('set_joint_positions', angles=angles)
+        return response.get('status') == 'ok'
+
+    def set_joint_velocities(self, velocities: List[float]) -> bool:
+        """Set target joint velocities."""
+        response = self._send_command('set_joint_velocities', velocities=velocities)
+        return response.get('status') == 'ok'
+
+    def set_joint_torques(self, torques: List[float]) -> bool:
+        """Set target joint torques."""
+        response = self._send_command('set_joint_torques', torques=torques)
+        return response.get('status') == 'ok'
+
+    def set_interaction_options(self, options: Dict) -> bool:
+        """Set interaction control options."""
+        response = self._send_command('set_interaction_options', options=options)
+        return response.get('status') == 'ok'
+
     def get_endpoint_velocity(self) -> Optional[Dict]:
         """Get end-effector velocity (linear and angular)."""
         response = self._send_command('get_endpoint_velocity')
@@ -118,9 +145,9 @@ class ZMQClient:
                                        rate_hz=rate_hz)
         return response.get('status') == 'ok'
 
-    def execute_toss_trajectory(self, Q, Qd, Qdd, release_index=None) -> bool:
+    def execute_stream_trajectory(self, Q, Qd, Qdd, release_index=None) -> bool:
         """
-        Execute toss trajectory at 100Hz with async gripper release.
+        Execute stream trajectory at 100Hz with async gripper release.
 
         The server runs the 100Hz loop and fires the gripper at release_index
         step inside the container, so the gripper command does not interrupt
@@ -144,7 +171,7 @@ class ZMQClient:
             Qdd = Qdd.tolist()
 
         response = self._send_command(
-            'execute_toss_trajectory',
+            'execute_stream_trajectory',
             Q=Q, Qd=Qd, Qdd=Qdd,
             release_index=int(release_index) if release_index is not None else None
         )
@@ -155,6 +182,11 @@ class ZMQClient:
     def gripper_open(self) -> bool:
         """Open gripper."""
         response = self._send_command('gripper_open')
+        return response.get('status') == 'ok'
+
+    def gripper_release_async(self) -> bool:
+        """Release gripper asynchronously (non-blocking)."""
+        response = self._send_command('gripper_release_async')
         return response.get('status') == 'ok'
 
     def gripper_close(self) -> bool:

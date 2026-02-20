@@ -5,7 +5,7 @@ Pick a light by number and press Enter to toggle it on/off.
 Press q to quit.
 """
 
-from robot_client import SawyerRobot
+from sawyer_robot import SawyerRobot
 
 
 def show(lights, states):

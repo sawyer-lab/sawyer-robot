@@ -16,7 +16,7 @@ import time
 
 import cv2
 
-from robot_client import SawyerRobot
+from sawyer_robot import SawyerRobot
 
 
 def print_state(cam):

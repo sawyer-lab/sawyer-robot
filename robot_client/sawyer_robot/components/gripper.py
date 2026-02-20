@@ -43,6 +43,10 @@ class Gripper:
         """Open the gripper (release any object)."""
         return self._client.gripper_open()
 
+    def release_async(self) -> bool:
+        """Release gripper asynchronously (non-blocking)."""
+        return self._client.gripper_release_async()
+
     def close(self) -> bool:
         """Close the gripper (grasp an object)."""
         return self._client.gripper_close()

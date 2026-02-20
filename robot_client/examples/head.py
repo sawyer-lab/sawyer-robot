@@ -16,7 +16,7 @@ import math
 import cv2
 import numpy as np
 
-from robot_client import SawyerRobot
+from sawyer_robot import SawyerRobot
 
 PAN_STEP = 0.2
 
@@ -41,41 +41,44 @@ def main() -> None:
     print("=" * 60)
 
     with SawyerRobot() as robot:
-        while True:
-            cmd = input("\n> ").strip().lower()
+        try:
+            while True:
+                cmd = input("\n> ").strip().lower()
 
-            if cmd == "l":
-                angle = robot.head.pan + PAN_STEP
-                robot.head.set_pan(angle)
-                print(f"  pan → {math.degrees(robot.head.pan):.1f}°")
+                if cmd == "l":
+                    angle = robot.head.pan + PAN_STEP
+                    robot.head.set_pan(angle)
+                    print(f"  pan → {math.degrees(robot.head.pan):.1f}°")
 
-            elif cmd == "r":
-                angle = robot.head.pan - PAN_STEP
-                robot.head.set_pan(angle)
-                print(f"  pan → {math.degrees(robot.head.pan):.1f}°")
+                elif cmd == "r":
+                    angle = robot.head.pan - PAN_STEP
+                    robot.head.set_pan(angle)
+                    print(f"  pan → {math.degrees(robot.head.pan):.1f}°")
 
-            elif cmd == "c":
-                robot.head.set_pan(0.0)
-                print("  centred")
+                elif cmd == "c":
+                    robot.head.set_pan(0.0)
+                    print("  centred")
 
-            elif cmd == "d":
-                img = make_test_image("Sawyer")
-                robot.head.display_image(img)
-                print("  image sent to head display")
+                elif cmd == "d":
+                    img = make_test_image("Sawyer")
+                    robot.head.display_image(img)
+                    print("  image sent to head display")
 
-            elif cmd == "x":
-                robot.head.display_clear()
-                print("  display cleared")
+                elif cmd == "x":
+                    robot.head.display_clear()
+                    print("  display cleared")
 
-            elif cmd == "s":
-                angle = robot.head.pan
-                print(f"  pan: {angle:.4f} rad  ({math.degrees(angle):.1f}°)")
+                elif cmd == "s":
+                    angle = robot.head.pan
+                    print(f"  pan: {angle:.4f} rad  ({math.degrees(angle):.1f}°)")
 
-            elif cmd == "q":
-                break
+                elif cmd == "q":
+                    break
 
-            else:
-                print("  unknown command")
+                else:
+                    print("  unknown command")
+        except (EOFError, KeyboardInterrupt):
+            print()
 
     print("Done.")
 

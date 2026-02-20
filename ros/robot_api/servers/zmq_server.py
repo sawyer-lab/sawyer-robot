@@ -27,6 +27,7 @@ from hardware.camera import Camera, CAMERA_TOPIC_MAP
 from hardware.lights import Lights
 from hardware.head import Head
 from hardware.head_display import HeadDisplay
+from hardware.robot_enable import RobotEnable
 from hardware.gazebo_manager import GazeboManager
 from hardware.contact_sensor_manager import ContactSensorManager
 from hardware.rgbd_camera_manager import RGBDCameraManager
@@ -46,6 +47,9 @@ class RobotServer:
 
         rospy.loginfo("Initializing Robot...")
         self.robot = Robot()
+
+        rospy.loginfo("Initializing RobotEnable...")
+        self.robot_enable = RobotEnable()
 
         rospy.loginfo("Initializing Gripper...")
         self.gripper = Gripper(mode=self.mode)
@@ -217,9 +221,38 @@ class RobotServer:
                 else:
                     return {'status': 'error', 'message': 'Movement timed out or failed'}
 
+            elif command == 'set_joint_positions':
+                angles = message.get('angles')
+                if not angles: return {'status': 'error', 'message': 'Missing angles'}
+                from hardware.sawyer import RobotCommand, ControlMode
+                self.robot._sawyer.execute_stream([RobotCommand(position=angles)], ControlMode.POSITION)
+                return {'status': 'ok'}
+
+            elif command == 'set_joint_velocities':
+                velocities = message.get('velocities')
+                if not velocities: return {'status': 'error', 'message': 'Missing velocities'}
+                from hardware.sawyer import RobotCommand, ControlMode
+                self.robot._sawyer.execute_stream([RobotCommand(velocity=velocities)], ControlMode.VELOCITY)
+                return {'status': 'ok'}
+
+            elif command == 'set_joint_torques':
+                torques = message.get('torques')
+                if not torques: return {'status': 'error', 'message': 'Missing torques'}
+                from hardware.sawyer import RobotCommand, ControlMode
+                self.robot._sawyer.execute_stream([RobotCommand(effort=torques)], ControlMode.TORQUE)
+                return {'status': 'ok'}
+
             elif command == 'get_angles':
                 angles = self.robot.get_joint_angles()
                 return {'status': 'ok', 'angles': angles}
+
+            elif command == 'get_joint_velocities':
+                velocities = self.robot.get_joint_velocities()
+                return {'status': 'ok', 'velocities': velocities}
+
+            elif command == 'get_joint_efforts':
+                efforts = self.robot.get_joint_efforts()
+                return {'status': 'ok', 'efforts': efforts}
 
             elif command == 'get_endpoint_pose':
                 pose = self.robot.get_endpoint_pose()
@@ -228,10 +261,6 @@ class RobotServer:
             elif command == 'get_robot_state':
                 state = self.robot.get_state()
                 return {'status': 'ok', 'state': state}
-
-            elif command == 'get_joint_velocities':
-                velocities = self.robot.get_joint_velocities()
-                return {'status': 'ok', 'velocities': velocities}
 
             elif command == 'get_endpoint_velocity':
                 velocity = self.robot.get_endpoint_velocity()
@@ -247,10 +276,8 @@ class RobotServer:
                 success = self.robot.execute_trajectory(waypoints, rate_hz)
                 return {'status': 'ok' if success else 'error'}
 
-            elif command == 'execute_toss_trajectory':
+            elif command == 'execute_stream_trajectory':
                 # Execute trajectory at 100Hz with async gripper release at release_index.
-                # The gripper fires a non-blocking ROS publish in a daemon thread so the
-                # trajectory loop is never interrupted.
                 import numpy as np
                 Q   = np.array(message['Q'],   dtype=float)   # (N, 7)
                 Qd  = np.array(message['Qd'],  dtype=float)   # (N, 7)
@@ -283,10 +310,22 @@ class RobotServer:
 
                 return {'status': 'ok'}
 
+            elif command == 'set_interaction_options':
+                options = message.get('options')
+                if options is None:
+                    return {'status': 'error', 'message': 'Missing options'}
+                self.robot.set_interaction_control(options)
+                return {'status': 'ok'}
+
             # ===== Gripper Commands =====
             elif command == 'gripper_open':
                 success = self.gripper.open()
                 return {'status': 'ok' if success else 'error'}
+
+            elif command == 'gripper_release_async':
+                t = threading.Thread(target=self.gripper.release, daemon=True)
+                t.start()
+                return {'status': 'ok'}
 
             elif command == 'gripper_close':
                 success = self.gripper.close()

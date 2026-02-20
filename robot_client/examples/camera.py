@@ -13,8 +13,8 @@ import time
 
 import cv2
 
-from robot_client import SawyerRobot
-from robot_client.components.camera import BoundCamera
+from sawyer_robot import SawyerRobot
+from sawyer_robot.components.camera import BoundCamera
 
 
 def pick_camera(robot: SawyerRobot) -> BoundCamera:
@@ -55,20 +55,23 @@ def main() -> None:
         save_count = 0
         last_frame = None
 
-        while True:
-            frame = cam.get_image()
-            if frame is not None:
-                last_frame = frame
-                cv2.imshow(f"Sawyer — {label}", frame)
+        try:
+            while True:
+                frame = cam.get_image()
+                if frame is not None:
+                    last_frame = frame
+                    cv2.imshow(f"Sawyer — {label}", frame)
 
-            key = cv2.waitKey(30) & 0xFF
-            if key == ord("q"):
-                break
-            elif key == ord("s") and last_frame is not None:
-                path = f"/tmp/sawyer_{label}_{save_count:04d}.jpg"
-                cv2.imwrite(path, last_frame)
-                print(f"  saved: {path}")
-                save_count += 1
+                key = cv2.waitKey(30) & 0xFF
+                if key == ord("q"):
+                    break
+                elif key == ord("s") and last_frame is not None:
+                    path = f"/tmp/sawyer_{label}_{save_count:04d}.jpg"
+                    cv2.imwrite(path, last_frame)
+                    print(f"  saved: {path}")
+                    save_count += 1
+        except KeyboardInterrupt:
+            print("\nInterrupted.")
 
         cv2.destroyAllWindows()
         cam.stop()

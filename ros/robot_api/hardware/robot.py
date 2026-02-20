@@ -157,6 +157,12 @@ class Robot:
             'endpoint_effort': self.get_endpoint_effort(),
         }
 
+    def set_interaction_control(self, options: Dict) -> None:
+        """
+        Set interaction control options (stiffness, force control).
+        """
+        self._sawyer.set_interaction_control(options)
+
 
 if __name__ == "__main__":
     """Simple test of Robot interface"""

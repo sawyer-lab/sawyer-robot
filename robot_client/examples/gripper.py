@@ -8,7 +8,7 @@ gripper.py — Interactive gripper control.
     q  quit
 """
 
-from robot_client import SawyerRobot
+from sawyer_robot import SawyerRobot
 
 
 def main() -> None:
@@ -16,29 +16,32 @@ def main() -> None:
     print("=" * 50)
 
     with SawyerRobot() as robot:
-        while True:
-            cmd = input("\n> ").strip().lower()
+        try:
+            while True:
+                cmd = input("\n> ").strip().lower()
 
-            if cmd == "o":
-                ok = robot.gripper.open()
-                print("open:", "OK" if ok else "FAIL")
+                if cmd == "o":
+                    ok = robot.gripper.open()
+                    print("open:", "OK" if ok else "FAIL")
 
-            elif cmd == "c":
-                ok = robot.gripper.close()
-                print("close:", "OK" if ok else "FAIL")
+                elif cmd == "c":
+                    ok = robot.gripper.close()
+                    print("close:", "OK" if ok else "FAIL")
 
-            elif cmd == "s":
-                s = robot.gripper.state
-                print(f"  position    : {s.position:.4f} m")
-                print(f"  is_grasping : {s.is_grasping}")
-                print(f"  state       : {s.state.value}")
-                print(f"  device      : {s.device}")
+                elif cmd == "s":
+                    s = robot.gripper.state
+                    print(f"  position    : {s.position:.4f} m")
+                    print(f"  is_grasping : {s.is_grasping}")
+                    print(f"  state       : {s.state.value}")
+                    print(f"  device      : {s.device}")
 
-            elif cmd == "q":
-                break
+                elif cmd == "q":
+                    break
 
-            else:
-                print("unknown command")
+                else:
+                    print("unknown command")
+        except (EOFError, KeyboardInterrupt):
+            print()
 
 
 if __name__ == "__main__":

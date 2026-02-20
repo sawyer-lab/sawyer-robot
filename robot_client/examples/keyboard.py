@@ -18,7 +18,7 @@ import sys
 import termios
 import tty
 
-from robot_client import SawyerRobot, JointAngles
+from sawyer_robot import SawyerRobot, JointAngles
 
 
 STEP = 0.05
@@ -61,35 +61,38 @@ def main() -> None:
         joints = robot.arm.get_joints()
         print_joints(joints)
 
-        while True:
-            key = get_key()
+        try:
+            while True:
+                key = get_key()
 
-            if key == "x":
-                break
+                if key == "x":
+                    break
 
-            elif key in BINDINGS:
-                _, idx, delta = BINDINGS[key]
-                field = f"j{idx}"
-                setattr(joints, field, getattr(joints, field) + delta)
-                robot.arm.move(joints)
+                elif key in BINDINGS:
+                    _, idx, delta = BINDINGS[key]
+                    field = f"j{idx}"
+                    setattr(joints, field, getattr(joints, field) + delta)
+                    robot.arm.move(joints)
 
-            elif key == "o":
-                robot.gripper.open()
-                print("\n  gripper: OPEN")
+                elif key == "o":
+                    robot.gripper.open()
+                    print("\n  gripper: OPEN")
 
-            elif key == "c":
-                robot.gripper.close()
-                print("\n  gripper: CLOSE")
+                elif key == "c":
+                    robot.gripper.close()
+                    print("\n  gripper: CLOSE")
 
-            elif key == "h":
-                joints = JointAngles()
-                robot.arm.move(joints)
-                print("\n  home")
+                elif key == "h":
+                    joints = JointAngles()
+                    robot.arm.move(joints)
+                    print("\n  home")
 
-            else:
-                continue
+                else:
+                    continue
 
-            print_joints(joints)
+                print_joints(joints)
+        except KeyboardInterrupt:
+            print("\n\nInterrupted.")
 
     print("\n\nDone.")
 
