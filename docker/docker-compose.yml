@@ -1,11 +1,9 @@
-version: '3.8'
-
 services:
   # Development mode - mounts robot_api for live editing
   robot_dev:
     build:
-      context: .
-      dockerfile: Dockerfile
+      context: ..
+      dockerfile: docker/Dockerfile
     image: robo2025:latest
     pull_policy: never  # Don't try to pull, always use local build
     container_name: robo2025_dev
@@ -34,11 +32,11 @@ services:
       - HOST_IP=${HOST_IP:-192.168.1.101}
       - ROBOT_IP=${ROBOT_IP:-192.168.1.100}
       - ROBOT_HOSTNAME=${ROBOT_HOSTNAME:-021607CP00070.local}
+      - ROBOT_MODE=${ROBOT_MODE:-real}
     extra_hosts:
       - 021607CP00070.local:192.168.1.100
     volumes:
-      - ./ros:/home/kid/ros_ws/src/custom
-      - ./src:/tossing_system/src
+      - ../ros:/home/kid/ros_ws/src/custom
       - /tmp/.X11-unix:/tmp/.X11-unix:rw
 
     stdin_open: true

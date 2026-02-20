@@ -215,7 +215,28 @@ class ZMQClient:
         response = self._send_command('camera_get_state', **kwargs)
         return response.get('state') if response.get('status') == 'ok' else None
 
-    # ===== Lights Commands =====
+    def camera_set_strobe(self, on: bool, camera=None) -> bool:
+        """Enable/disable strobe on Cognex hand camera."""
+        kwargs = {'on': on}
+        if camera is not None:
+            kwargs['camera'] = camera
+        return self._send_command('camera_set_strobe', **kwargs).get('status') == 'ok'
+
+    def camera_set_exposure(self, value: float, camera=None) -> bool:
+        """Set exposure (0.01–100.0) on Cognex hand camera."""
+        kwargs = {'value': value}
+        if camera is not None:
+            kwargs['camera'] = camera
+        return self._send_command('camera_set_exposure', **kwargs).get('status') == 'ok'
+
+    def camera_set_gain(self, value: int, camera=None) -> bool:
+        """Set gain (0–255) on Cognex hand camera."""
+        kwargs = {'value': value}
+        if camera is not None:
+            kwargs['camera'] = camera
+        return self._send_command('camera_set_gain', **kwargs).get('status') == 'ok'
+
+
 
     def lights_list(self):
         response = self._send_command('lights_list')

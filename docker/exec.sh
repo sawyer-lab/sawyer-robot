@@ -1,2 +1,3 @@
 #!/bin/bash
-docker-compose exec robot_dev bash
+cd "$(dirname "${BASH_SOURCE[0]}")"
+docker compose exec robot_dev bash

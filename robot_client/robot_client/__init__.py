@@ -1,51 +1,30 @@
 """
-Robot Client Library
+robot_client — Sawyer robot control library.
 
-Simple Python client for controlling robots through the container API.
-Supports multiple communication protocols: ZMQ, HTTP, WebSocket.
+Entry point::
 
-Each subsystem has its own client class:
-- RobotClient: Robot arm control
-- GripperClient: Gripper control
-- CameraClient: Camera control
-- GazeboClient: Gazebo simulation control
-- HeadClient: Head pan and display
-- LightsClient: Robot lights control
-- ContactSensorClient: Landing detection
-- RGBDCameraClient: Point cloud capture
+    from robot_client import SawyerRobot
 
-Geometry primitives:
-- Position, Quaternion, Euler, Pose, JointAngles
+    with SawyerRobot(host='localhost') as robot:
+        joints = robot.arm.get_joints()
+        joints.j0 += 0.05
+        robot.arm.move(joints)
+        robot.gripper.open()
 
-Sawyer enums:
-- Joint, Camera, Limb, GripperState
-
-Typed status dataclass:
-- GripperStatus
+Geometry primitives: Position, Quaternion, Euler, Pose, JointAngles
+Sawyer enums:        Joint, Camera, Limb, GripperState
+Status types:        GripperStatus
 """
 
-from .robot import RobotClient
-from .gripper import GripperClient, GripperStatus
-from .camera import CameraClient
-from .gazebo import GazeboClient
-from .head import HeadClient
-from .lights import LightsClient
-from .contact_sensor import ContactSensorClient
-from .rgbd_camera import RGBDCameraClient
+from .sawyer_robot import SawyerRobot
 from .geometry import Position, Quaternion, Euler, Pose, JointAngles
 from .sawyer import Joint, Camera, Limb, GripperState
+from .components.gripper import GripperStatus
 
-__version__ = "1.0.0"
+__version__ = "2.0.0"
 __all__ = [
-    # clients
-    "RobotClient",
-    "GripperClient",
-    "CameraClient",
-    "GazeboClient",
-    "HeadClient",
-    "LightsClient",
-    "ContactSensorClient",
-    "RGBDCameraClient",
+    # entry point
+    "SawyerRobot",
     # geometry
     "Position",
     "Quaternion",
@@ -57,6 +36,6 @@ __all__ = [
     "Camera",
     "Limb",
     "GripperState",
-    # typed status
+    # status types
     "GripperStatus",
 ]

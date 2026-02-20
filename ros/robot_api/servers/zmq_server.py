@@ -36,26 +36,19 @@ class RobotServer:
     """ZeroMQ server for robot and gripper control"""
 
     def __init__(self, command_port=5555, state_port=5556):
-        """
-        Initialize the ZMQ server.
-
-        Args:
-            command_port: Port for command socket (REP)
-            state_port: Port for state broadcast (PUB)
-        """
         self.command_port = command_port
         self.state_port = state_port
         self.running = True
 
-        # Initialize ROS node
+        self.mode = os.environ.get('ROBOT_MODE', 'real').lower()
         rospy.init_node('robot_zmq_server', anonymous=True)
+        rospy.loginfo(f"RobotServer starting in mode='{self.mode}'")
 
-        # Initialize robot hardware
         rospy.loginfo("Initializing Robot...")
         self.robot = Robot()
 
         rospy.loginfo("Initializing Gripper...")
-        self.gripper = Gripper()
+        self.gripper = Gripper(mode=self.mode)
 
         rospy.loginfo("Initializing Cameras...")
         self.cameras = {
@@ -333,7 +326,29 @@ class RobotServer:
                 cam = self._get_camera(message)
                 return {'status': 'ok', 'state': cam.get_state()}
 
-            # ===== Lights Commands =====
+            elif command == 'camera_set_strobe':
+                cam = self._get_camera(message)
+                on = message.get('on', True)
+                success = cam.set_strobe(bool(on))
+                return {'status': 'ok' if success else 'error'}
+
+            elif command == 'camera_set_exposure':
+                cam = self._get_camera(message)
+                value = message.get('value')
+                if value is None:
+                    return {'status': 'error', 'message': 'Missing value'}
+                success = cam.set_exposure(float(value))
+                return {'status': 'ok' if success else 'error'}
+
+            elif command == 'camera_set_gain':
+                cam = self._get_camera(message)
+                value = message.get('value')
+                if value is None:
+                    return {'status': 'error', 'message': 'Missing value'}
+                success = cam.set_gain(int(value))
+                return {'status': 'ok' if success else 'error'}
+
+
             elif command == 'lights_list':
                 lights = self.lights.list_all_lights()
                 return {'status': 'ok', 'lights': lights}

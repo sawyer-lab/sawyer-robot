@@ -18,3 +18,6 @@ dependencies = [
 [tool.setuptools.packages.find]
 where = ["."]
 include = ["robot_client*"]
+
+[tool.setuptools.package-data]
+robot_client = ["py.typed"]

@@ -6,3 +6,5 @@ Requires-Python: >=3.8
 Requires-Dist: pyzmq>=25.0.0
 Requires-Dist: requests>=2.25.0
 Requires-Dist: python-socketio>=5.0.0
+Requires-Dist: numpy>=1.21.0
+Requires-Dist: scipy>=1.7.0

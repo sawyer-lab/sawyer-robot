@@ -1,0 +1,14 @@
+# docker-compose.override.example.yml
+#
+# Copy to docker-compose.override.yml and edit paths for your project.
+# Docker Compose merges it automatically — no changes to run.sh needed.
+# This file is gitignored — safe to customise.
+
+services:
+  robot_dev:
+    volumes:
+      # Your project's Python source code
+      - /home/your-user/Projects/your-project/src:/tossing_system/src
+      # Your project-specific ROS packages (Gazebo worlds, descriptions, etc.)
+      # Mounted as a separate workspace directory so catkin can find them
+      - /home/your-user/Projects/your-project/ros:/home/kid/ros_ws/src/project
