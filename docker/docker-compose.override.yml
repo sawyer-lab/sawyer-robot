@@ -1,0 +1,7 @@
+services:
+  robot_dev:
+    volumes:
+      # Project source code (Renamed from src to tossingbot)
+      - ../../tossingbot/tossingbot:/tossing_system/src
+      # Project-specific ROS packages (Gazebo worlds, robot descriptions, environments)
+      - ../../tossingbot/ros:/home/kid/ros_ws/src/project
