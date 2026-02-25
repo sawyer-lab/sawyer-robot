@@ -22,6 +22,8 @@ from .components.gripper import Gripper
 from .components.camera import BoundCamera
 from .components.head import Head
 from .components.lights import Lights
+from .components.navigator import Navigator
+from .components.cuff import Cuff
 
 
 class SawyerRobot:
@@ -40,6 +42,8 @@ class SawyerRobot:
         self._hand_camera: BoundCamera  | None = None
         self._head:        Head         | None = None
         self._lights:      Lights       | None = None
+        self._navigator:   Navigator    | None = None
+        self._cuff:        Cuff         | None = None
 
     # ── sub-systems ───────────────────────────────────────────────────────────
 
@@ -84,6 +88,22 @@ class SawyerRobot:
         if self._lights is None:
             self._lights = Lights(self._client)
         return self._lights
+    
+    
+    @property
+    def navigator(self) -> Navigator:
+        """Navigator buttons and wheel."""
+        if self._navigator is None:
+            self._navigator = Navigator(self._client)
+        return self._navigator
+
+    @property
+    def cuff(self) -> Cuff:
+        """Arm cuff buttons."""
+        if self._cuff is None:
+            self._cuff = Cuff(self._client)
+        return self._cuff
+
 
     # ── robot state ───────────────────────────────────────────────────────────
 

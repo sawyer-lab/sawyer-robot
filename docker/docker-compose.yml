@@ -26,15 +26,15 @@ services:
       - __GLX_VENDOR_LIBRARY_NAME=nvidia
       - __VK_LAYER_NV_optimus=NVIDIA_only
       - PYTHONPATH=/home/kid/ros_ws/src/custom/robot_api:/tossing_system/src:$PYTHONPATH
-      - ROS_MASTER_URI=http://127.0.0.1:11311
-      - ROS_IP=127.0.0.1
-      - ROS_HOSTNAME=127.0.0.1
-      - HOST_IP=${HOST_IP:-127.0.0.1}
-      - ROBOT_IP=${ROBOT_IP:-127.0.0.1}
+      - ROS_MASTER_URI=http://192.168.1.106:11311
+      - ROS_IP=192.168.1.105
+      - ROS_HOSTNAME=192.168.1.105
+      - HOST_IP=${HOST_IP:-192.168.1.105}
+      - ROBOT_IP=${ROBOT_IP:-192.168.1.106}
       - ROBOT_HOSTNAME=${ROBOT_HOSTNAME:-021607CP00070.local}
       - ROBOT_MODE=${ROBOT_MODE:-real}
     extra_hosts:
-      - 021607CP00070.local:127.0.0.1
+      - 021607CP00070.local:192.168.1.106
     volumes:
       - ../ros:/home/kid/ros_ws/src/custom
       - /tmp/.X11-unix:/tmp/.X11-unix:rw

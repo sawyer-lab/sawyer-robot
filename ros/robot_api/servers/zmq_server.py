@@ -31,7 +31,8 @@ from hardware.robot_enable import RobotEnable
 from hardware.gazebo_manager import GazeboManager
 from hardware.contact_sensor_manager import ContactSensorManager
 from hardware.rgbd_camera_manager import RGBDCameraManager
-
+from hardware.navigator import Navigator
+from hardware.cuff import Cuff
 
 class RobotServer:
     """ZeroMQ server for robot and gripper control"""
@@ -91,6 +92,11 @@ class RobotServer:
             rospy.logwarn(f"RGBD Camera not available: {e}")
             self.rgbd_camera = None
             self.camera_streaming_enabled = False
+            
+        try:
+            self.navigator = Navigator()
+            self.cuff = Cuff()
+        except: self.navigator, self.cuff = None, None
 
         # Create ZeroMQ context and sockets
         self.context = zmq.Context()
@@ -144,6 +150,9 @@ class RobotServer:
             landing = self.contact_sensor.get_last_landing()
             if landing:
                 contact_state = landing
+                
+        nav_state = self.navigator.get_state() if self.navigator else None
+        cuff_state = self.cuff.get_state() if self.cuff else None
 
         # Add camera data if streaming is enabled
         camera_state = None
@@ -164,6 +173,8 @@ class RobotServer:
             'contact':   contact_state,
             'camera':    camera_state,
             'timestamp': time.time(),
+            'navigator': nav_state, 
+            'cuff': cuff_state,
         }
 
     def state_publisher_thread(self):
@@ -614,7 +625,23 @@ class RobotServer:
                     return {'status': 'error', 'message': 'RGBD camera not available'}
                 self.camera_streaming_enabled = False
                 return {'status': 'ok'}
+            
+            
+            # ===== Navigator and Cuff Commands =====
+            elif command == 'navigator_get_state':
+                if not self.navigator:
+                    return {'status': 'error', 'message': 'Navigator not available'}
+                side = message.get('side', 'all')
+                state = self.navigator.get_state(side=side)
+                return {'status': 'ok', 'state': state}
 
+            elif command == 'cuff_get_state':
+                if not self.cuff:
+                    return {'status': 'error', 'message': 'Cuff not available'}
+                side = message.get('side', 'right')
+                state = self.cuff.get_state(side=side)
+                return {'status': 'ok', 'state': state}
+            
 
             # ===== System Commands =====
             elif command == 'get_full_state':
@@ -630,7 +657,9 @@ class RobotServer:
 
             else:
                 return {'status': 'error', 'message': f'Unknown command: {command}'}
-
+            
+            
+    
         except Exception as e:
             rospy.logerr(f"Command handler error: {e}")
             return {'status': 'error', 'message': str(e)}
