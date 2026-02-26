@@ -55,6 +55,7 @@ def main():
                 if event_str:
                     print(f"Event: {event_str}")
                     robot.head.display_image(create_status_image(event_str))
+    
                 
                 time.sleep(0.1)
                 

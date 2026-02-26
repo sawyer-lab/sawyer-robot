@@ -17,7 +17,8 @@ Status types:        GripperStatus
 """
 
 from .sawyer_robot import SawyerRobot
-from .geometry import Position, Quaternion, Euler, Pose, JointAngles
+# Re-export geometry from common package for backward compatibility
+from sawyer_common.geometry import Position, Quaternion, Euler, Pose, JointAngles
 from .sawyer import Joint, Camera, Limb, GripperState
 from .components.gripper import GripperStatus
 
